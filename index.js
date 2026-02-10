@@ -1,6 +1,9 @@
+require('dotenv').config()
 const express = require('express');
+const connectDB = require("./config/db");
 const app = express();
-//request of content type of body
+connectDB()
+    //request of content type of body
 const bodyParser = require('body-parser')
 app.use(bodyParser.json())
     //define a simple route
@@ -15,6 +18,42 @@ app.post('/users', (req, res) => {
         user.id = ++lastId
         users.push(user)
         res.json(user)
+    })
+    //find one user 
+app.get('/users/:id', (req, res) => {
+        const id = parseInt(req.params.id)
+        const user = users.find(u => u.id === id)
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" })
+        }
+        res.json(user)
+    })
+    ///update especifiq user
+app.put('/users/:id', (req, res) => {
+        const id = parseInt(req.params.id)
+        const userUpdate = req.body
+        const userIndex = users.findIndex((u) => u.id === id)
+        if (userIndex === -1) {
+            res.status(404).json({ message: "User Not Find" })
+
+        } else {
+            let user = users[userIndex]
+            users[userIndex] = {...users[userIndex], ...userUpdate, id }
+            res.json(users[userIndex])
+        }
+    })
+    //delete specific user
+app.delete('/users/:id', (req, res) => {
+        const id = parseInt(req.params.id)
+        const userIndex = users.findIndex((u) => u.id === id)
+
+        if (userIndex === -1) {
+            res.status(404).json({ message: "User Not Find" })
+        } else {
+            users.splice(userIndex, 1)
+            res.json({ message: "User Deleted Successfully." })
+        }
     })
     //retrieve the all users
 app.get('/users', (req, res) => {
